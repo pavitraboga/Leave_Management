@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leave Management</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2330; --muted:#667085; --line:#e4e7ec; --accent:#2f5bea; --ok:#12805c; --bad:#c4320a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 24px; background:var(--card); border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  .tag { font-size:12px; padding:3px 8px; border-radius:99px; background:#eef2ff; color:var(--accent); }
+  main { max-width:1000px; margin:0 auto; padding:20px 16px; display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  section h2 { font-size:15px; margin:0 0 12px; }
+  label { display:block; font-size:13px; color:var(--muted); margin-top:8px; }
+  select, input, button { font:inherit; width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  button { background:var(--accent); color:#fff; border:none; margin-top:12px; cursor:pointer; }
+  button.small { width:auto; margin:0 4px 0 0; padding:4px 10px; font-size:13px; }
+  button.reject { background:var(--bad); }
+  .msg { margin-top:10px; font-size:13px; min-height:20px; }
+  .msg.ok { color:var(--ok); } .msg.bad { color:var(--bad); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  td, th { text-align:left; padding:6px 4px; border-bottom:1px solid var(--line); }
+  .wide { grid-column:1/-1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Employee Leave Management</h1>
+  <span class="tag" id="version">version …</span>
+  <span class="tag" id="rule">approval limit …</span>
+</header>
+<main>
+  <section>
+    <h2>Employee — apply for leave</h2>
+    <label>Employee</label><select id="emp"></select>
+    <label>Start date</label><input type="date" id="start">
+    <label>End date</label><input type="date" id="end">
+    <label>Reason</label><input id="reason" placeholder="Family function">
+    <button id="applyBtn">Apply</button>
+    <div class="msg" id="applyMsg"></div>
+  </section>
+  <section>
+    <h2>Manager — pending requests</h2>
+    <label>Acting as</label><select id="mgr"></select>
+    <div id="pending" style="margin-top:10px"></div>
+    <div class="msg" id="mgrMsg"></div>
+  </section>
+  <section class="wide">
+    <h2>HR — leave balances</h2>
+    <table><thead><tr><th>Name</th><th>Role</th><th>Balance</th><th>Days taken</th></tr></thead><tbody id="balances"></tbody></table>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let people = [];
+const api = async (url, opts = {}) => {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok, body };
+};
+const say = (el, text, ok) => { el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'bad'); };
+const nameOf = (id) => (people.find((p) => p.id === id) || {}).name || id;
+
+async function load() {
+  const r = await api('/api/rules');
+  $('version').textContent = 'version ' + r.body.version;
+  $('rule').textContent = 'max ' + r.body.rules.maxDaysPerApproval + ' days per approval';
+  people = (await api('/api/employees')).body;
+  const opt = (p) => `<option value="${p.id}">${p.name} — balance ${p.leaveBalance}</option>`;
+  const keepEmp = $('emp').value;
+  $('emp').innerHTML = people.filter((p) => p.role !== 'hr').map(opt).join('');
+  if (keepEmp) $('emp').value = keepEmp;
+  $('mgr').innerHTML = people.filter((p) => p.role === 'manager').map(opt).join('');
+  const pending = (await api('/api/leaves?status=PENDING')).body;
+  $('pending').innerHTML = pending.length ? `<table>${pending.map((l) => `<tr>
+    <td>${nameOf(l.employeeId)}<br><small>${l.startDate} → ${l.endDate} (${l.days} d)</small></td>
+    <td style="white-space:nowrap"><button class="small" onclick="decide('${l.id}','approve')">Approve</button><button class="small reject" onclick="decide('${l.id}','reject')">Reject</button></td></tr>`).join('')}</table>`
+    : '<small>No pending requests.</small>';
+  const hr = people.find((p) => p.role === 'hr');
+  if (hr) {
+    const rows = (await api('/api/hr/balances?hrId=' + hr.id)).body;
+    $('balances').innerHTML = rows.map((r) => `<tr><td>${r.name}</td><td>${r.role}</td><td>${r.leaveBalance}</td><td>${r.daysTaken}</td></tr>`).join('');
+  }
+}
+
+$('applyBtn').onclick = async () => {
+  const r = await api('/api/leaves', { method: 'POST', body: JSON.stringify({
+    employeeId: $('emp').value, startDate: $('start').value, endDate: $('end').value, reason: $('reason').value }) });
+  say($('applyMsg'), r.ok ? `Applied for ${r.body.days} day(s) — pending approval` : r.body.error, r.ok);
+  load();
+};
+
+window.decide = async (id, action) => {
+  const r = await api(`/api/leaves/${id}/${action}`, { method: 'POST', body: JSON.stringify({ managerId: $('mgr').value }) });
+  say($('mgrMsg'), r.ok ? `Leave ${r.body.status.toLowerCase()}` : r.body.error, r.ok);
+  load();
+};
+
+load();
+</script>
+</body>
+</html>

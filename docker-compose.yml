@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: leave-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: leave-app:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      args:
+        APP_VERSION: ${IMAGE_TAG:-latest}
+    container_name: leave-app
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017/leave_db
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:

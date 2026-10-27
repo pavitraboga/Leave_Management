@@ -5,7 +5,7 @@
 // Jenkins will test, build, deploy and health-check the new version automatically.
 const RULES = {
   // A manager can approve a single leave request of at most this many days.
-  maxDaysPerApproval: 10,
+  maxDaysPerApproval: 5,
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;

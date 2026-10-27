@@ -12,7 +12,7 @@ services:
       retries: 5
 
   app:
-    image: leave-app:${IMAGE_TAG:-latest}
+    image: ${IMAGE:-leave-app}:${IMAGE_TAG:-latest}
     build:
       context: .
       args:

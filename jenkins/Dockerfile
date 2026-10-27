@@ -8,4 +8,4 @@ RUN apt-get update && apt-get install -y ca-certificates curl gnupg \
  && apt-get update && apt-get install -y docker-ce-cli docker-compose-plugin \
  && rm -rf /var/lib/apt/lists/*
 USER jenkins
-RUN jenkins-plugin-cli --plugins git workflow-aggregator docker-workflow junit timestamper
+RUN jenkins-plugin-cli --plugins git credentials-binding workflow-aggregator docker-workflow junit timestamper

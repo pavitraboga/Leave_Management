@@ -141,3 +141,9 @@ Optional (show CI catching a bug): break a rule (e.g. remove the overlap check i
 
 ## Result
 An automated CI/CD pipeline was implemented with Jenkins and Docker. Every push is tested, packaged as a Docker image, deployed with MongoDB using Docker Compose, and verified with a health check — with no manual steps.
+
+---
+
+## Cloud deployment (public link)
+See **[DEPLOY-RENDER.md](DEPLOY-RENDER.md)** — Jenkins pushes the image to Docker Hub and deploys it to
+Render (free), with MongoDB Atlas (free) as the database.

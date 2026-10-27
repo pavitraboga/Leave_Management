@@ -1,17 +1,9 @@
 const { createApp } = require('./app');
 const { createMongoStore } = require('./stores/mongoStore');
+const { seed } = require('./seed');
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/leave_db';
-
-async function seed(store) {
-  if ((await store.listEmployees()).length > 0) return;
-  await store.createEmployee({ name: 'Asha (Employee)', email: 'asha@corp.test', role: 'employee', leaveBalance: 20 });
-  await store.createEmployee({ name: 'Ravi (Employee)', email: 'ravi@corp.test', role: 'employee', leaveBalance: 0 });
-  await store.createEmployee({ name: 'Meera (Manager)', email: 'meera@corp.test', role: 'manager', leaveBalance: 20 });
-  await store.createEmployee({ name: 'Kiran (HR)', email: 'kiran@corp.test', role: 'hr', leaveBalance: 20 });
-  console.log('Seeded demo employees');
-}
 
 async function start() {
   for (let attempt = 1; ; attempt++) {

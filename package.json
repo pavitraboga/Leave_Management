@@ -19,7 +19,7 @@
   "jest": {
     "testEnvironment": "node",
     "coverageDirectory": "reports/coverage",
-    "collectCoverageFrom": ["src/**/*.js", "!src/server.js", "!src/stores/mongoStore.js"],
+    "collectCoverageFrom": ["src/**/*.js", "!src/server.js", "!src/stores/mongoStore.js", "!src/seed.js"],
     "reporters": [
       "default",
       ["jest-junit", { "outputDirectory": "reports", "outputName": "junit.xml" }]

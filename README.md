@@ -9,11 +9,12 @@ leave-management-system/
 ├── src/
 │   ├── rules.js              # business rules (maxDaysPerApproval = demo knob)
 │   ├── app.js                # Express routes (employee / manager / HR)
-│   ├── server.js             # starts app, connects MongoDB, seeds demo users
+│   ├── server.js             # starts app, connects MongoDB
+│   ├── seed.js               # demo employees + sample leaves (fresh DB only)
 │   └── stores/
 │       ├── memoryStore.js    # used by tests (no DB needed in CI)
 │       └── mongoStore.js     # used in the deployed container
-├── public/index.html         # simple UI: apply / approve / HR balances
+├── public/                   # Absenta UI (index.html, styles.css, app.js)
 ├── tests/leave.test.js       # Jest + Supertest (17 tests)
 ├── Dockerfile                # multi-stage: node:20 build -> node:20-alpine runtime
 ├── docker-compose.yml        # app + MongoDB started together
@@ -89,13 +90,23 @@ Open the build → **Stage View** / **Console Output**:
 
 If any test fails, the pipeline stops and **the old version keeps running**.
 
-### Step 6 — Use the app
+### Step 6 — Use the app (Absenta)
 Open http://localhost:3000. The header shows the **build number** and the **current approval limit**.
+Use the **Employee | Manager** toggle at the top to switch views.
 
-Seeded users: Asha (employee, 20 days), Ravi (employee, 0 days), Meera (manager), Kiran (HR).
+- **Employee view:** balance / taken / pending donut charts, "Up Next", a month calendar of your leave,
+  your leave record, and a **Request a Leave** form that previews days, balance after approval and rule warnings.
+- **Manager view:** KPI cards, pending approvals (flags requests over the limit or over balance),
+  team availability for today, team calendar (week grid or month), team balance bars,
+  request-status donut, leave-days-by-month chart and decision history.
+
+Seeded users: Asha, Ravi (0 balance), Vikram, Neha (employees), Meera (manager), Kiran (HR), plus sample leaves.
 - Apply as Ravi → "leave balance is zero"
-- Apply as Asha twice for overlapping dates → overlap error
-- Approve as Meera → Asha's balance drops in the HR table
+- Apply as Asha for dates overlapping an existing request → overlap error
+- Approve as Meera → the balance drops in the charts
+
+> Sample leaves are only added when the database is empty. To reset to the demo data once:
+> `docker compose down -v` then rebuild in Jenkins (or `docker compose up -d --build`).
 
 Check health: `curl -f http://localhost:3000/health`
 

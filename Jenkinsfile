@@ -1,11 +1,9 @@
-// Absenta CI/CD pipeline
-// Test -> Build -> Deploy local (docker compose) -> Health check local
-//      -> Push to Docker Hub -> Deploy to Render -> Health check public URL
+
 pipeline {
     agent any
 
     environment {
-        // ======== CHANGE THESE TWO LINES ========
+       
         IMAGE      = 'docker.io/pavitra27/absenta'
         RENDER_URL = 'https://absenta.onrender.com'
         // ========================================
@@ -13,7 +11,7 @@ pipeline {
     }
 
     triggers {
-        // Checks GitHub every minute; a push starts the pipeline automatically.
+        
         pollSCM('* * * * *')
     }
 

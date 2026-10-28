@@ -2,10 +2,10 @@
 // Employees are matched by email (safe to run on every start).
 // Sample leaves are only added when the database has no leaves at all.
 const DEMO_PEOPLE = [
-  { key: 'asha', name: 'Asha Rao', email: 'asha@corp.test', role: 'employee', leaveBalance: 20 },
+  { key: 'asha', name: 'Manikarao', email: 'asha@corp.test', role: 'employee', leaveBalance: 20 },
   { key: 'ravi', name: 'Ravi Kumar', email: 'ravi@corp.test', role: 'employee', leaveBalance: 0 },
   { key: 'vikram', name: 'Vikram Shah', email: 'vikram@corp.test', role: 'employee', leaveBalance: 15 },
-  { key: 'neha', name: 'Neha Iyer', email: 'neha@corp.test', role: 'employee', leaveBalance: 18 },
+  { key: 'neha', name: 'kshitij Iyer', email: 'neha@corp.test', role: 'employee', leaveBalance: 18 },
   { key: 'meera', name: 'Meera Nair', email: 'meera@corp.test', role: 'manager', leaveBalance: 20 },
   { key: 'kiran', name: 'Kiran Das', email: 'kiran@corp.test', role: 'hr', leaveBalance: 20 },
 ];
